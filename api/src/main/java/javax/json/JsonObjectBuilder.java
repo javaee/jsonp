@@ -42,6 +42,7 @@ package javax.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Map;
 
 /**
  * A builder for creating {@link JsonObject} models from scratch. This
@@ -114,6 +115,9 @@ import java.math.BigInteger;
  * value while building the JSON object
  *
  * @see JsonArrayBuilder
+ * 
+ * @author Jitendra Kotamraju, Hendrik Saly
+ * 
  */
 public interface JsonObjectBuilder {
 
@@ -265,6 +269,17 @@ public interface JsonObjectBuilder {
      * @throws NullPointerException if the specified name or builder is null
      */
     JsonObjectBuilder add(String name, JsonArrayBuilder builder);
+
+    /**
+     * Adds a defensive deep clone of all name/{@code JsonValue} mappings in the map to the JSON object associated with
+     * this object builder. If the object contains a mapping for the specified
+     * name, this method replaces the old value with the specified value.
+     *
+     * @param map the map which holds the name/{@code JsonValue} mappings that should be added to this this object builder. See {@code (JsonObject)toMutableMap()}
+     * @return this object builder
+     * @throws NullPointerException if the specified map is null
+     */
+    JsonObjectBuilder add(Map<String, JsonValue> map);
 
     /**
      * Returns the JSON object associated with this object builder. 

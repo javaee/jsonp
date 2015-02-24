@@ -42,6 +42,8 @@ package javax.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A builder for creating {@link JsonArray} models from scratch. This
@@ -95,6 +97,9 @@ import java.math.BigInteger;
  * value while building the JSON array
  *
  * @see JsonObjectBuilder
+ * 
+ * @author Jitendra Kotamraju, Hendrik Saly
+ *  
  */
 public interface JsonArrayBuilder {
 
@@ -203,6 +208,15 @@ public interface JsonArrayBuilder {
      * @throws NullPointerException if the specified builder is null
      */
     JsonArrayBuilder add(JsonArrayBuilder builder);
+
+    /**
+     * Adds a defensive deep clone of all {@code JsonValue} in the list to the array.
+     *
+     * @param list the list which holds the {@code JsonValue} values that should be added to this this array builder. See {@code (JsonArray)toMutableList()}
+     * @return this array builder
+     * @throws NullPointerException if the specified list is null
+     */
+    JsonArrayBuilder add(List<JsonValue> list);
 
     /**
      * Returns the current array.

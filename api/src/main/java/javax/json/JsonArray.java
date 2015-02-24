@@ -111,7 +111,7 @@ import java.util.List;
  * whether directly or using its collection views, results in an 
  * {@code UnsupportedOperationException}.
  *
- * @author Jitendra Kotamraju
+ * @author Jitendra Kotamraju, Hendrik Saly
  */
 public interface JsonArray extends JsonStructure, List<JsonValue> {
 
@@ -261,5 +261,12 @@ public interface JsonArray extends JsonStructure, List<JsonValue> {
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     boolean isNull(int index);
+
+    /**
+     * Returns a defensive deep cloned mutable list.
+     *
+     * @return the non null defensive deep cloned mutable list containing all {@code JsonValue} values of this {@code JsonArray}
+     */
+    List<JsonValue> toMutableList();
 
 }
