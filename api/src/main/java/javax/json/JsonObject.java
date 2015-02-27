@@ -125,7 +125,7 @@ import java.util.Map;
  * name/value pairs are added to the corresponding builder or the order
  * in which name/value pairs appear in the corresponding stream.
  *
- * @author Jitendra Kotamraju, Hendrik Saly
+ * @author Jitendra Kotamraju
  */
 public interface JsonObject extends JsonStructure, Map<String, JsonValue> {
 
@@ -271,12 +271,5 @@ public interface JsonObject extends JsonStructure, Map<String, JsonValue> {
      * mapping
      */
     boolean isNull(String name);
-
-    /**
-     * Returns a defensive deep cloned mutable map.
-     *
-     * @return the non null defensive deep cloned mutable map containing all name/{@code JsonValue} pairs of this {@code JsonObject}
-     */
-    Map<String, JsonValue> toMutableMap();
 
 }
