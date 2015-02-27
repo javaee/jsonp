@@ -40,21 +40,37 @@
 
 package org.glassfish.json;
 
-import org.glassfish.json.api.BufferPool;
-
-import javax.json.*;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
+import javax.json.JsonWriter;
+import javax.json.MutableJsonStructure;
+import javax.json.MutableJsonStructure.Ancestor;
+
+import org.glassfish.json.JsonObjectBuilderImpl.JsonObjectImpl;
+import org.glassfish.json.api.BufferPool;
 
 /**
  * JsonArrayBuilder impl
  *
  * @author Jitendra Kotamraju
+ * @author Hendrik Saly
  */
 class JsonArrayBuilderImpl implements JsonArrayBuilder {
     private ArrayList<JsonValue> valueList;
@@ -155,7 +171,7 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
         }
     }
 
-    private static final class JsonArrayImpl extends AbstractList<JsonValue> implements JsonArray {
+    static final class JsonArrayImpl extends AbstractList<JsonValue> implements JsonArray {
         private final List<JsonValue> valueList;    // Unmodifiable
         private final BufferPool bufferPool;
 
@@ -262,14 +278,233 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
         @Override
         public String toString() {
             StringWriter sw = new StringWriter();
-            JsonWriter jw = new JsonWriterImpl(sw, bufferPool);
-            jw.write(this);
-            jw.close();
+            try (JsonWriter jw = new JsonWriterImpl(sw, bufferPool)) {
+                jw.write(this);
+            }
             return sw.toString();
         }
+
+        @Override
+        public MutableJsonStructure toMutableJsonStructure() {
+            return new MutableJsonArray(valueList, bufferPool, null);
+        }
+
+        MutableJsonStructure toMutableJsonStructure(Ancestor ancestor) {
+            return new MutableJsonArray(valueList, bufferPool, ancestor);
+        }
+        
     }
 
+    private static final class MutableJsonArray extends AbstractMutableJsonStructure {
+
+        private final List<GenericJsonValue> mutableList;
+        private final BufferPool bufferPool;
+
+        private MutableJsonArray(List<JsonValue> list, BufferPool bufferPool, Ancestor ancestor) {
+            super(JsonValue.ValueType.ARRAY, ancestor);
+
+            mutableList = new ArrayList<GenericJsonValue>();
+
+            int i = 0;
+            for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+                JsonValue value = (JsonValue) iterator.next();
+                final Ancestor ca = new AncestorImpl(this, i);
+
+                if (value.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                    mutableList.add(new GenericJsonValue(((JsonArrayImpl) value).toMutableJsonStructure(ca)));
+                } else if (value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+                    mutableList.add(new GenericJsonValue(((JsonObjectImpl) value).toMutableJsonStructure(ca)));
+                } else {
+                    mutableList.add(new GenericJsonValue(value, ca));
+                }
+                i++;
+            }
+
+            this.bufferPool = bufferPool;
+        }
+
+        @Override
+        public JsonValue getLeaf(int index) {
+            throwIfNotArray();
+            try {
+                GenericJsonValue genericJsonValue = mutableList.get(index);
+                if (genericJsonValue.isJsonValue()) {
+                    return genericJsonValue.getJsonValue();
+                }
+            } catch (IndexOutOfBoundsException e) {
+                throw new JsonException("invalid index "+index);
+            }
+
+            throw new JsonException("not a value");
+        }
+
+        @Override
+        public final MutableJsonStructure set(int index, JsonValue value) {
+            throwIfNotArray();
+            try {
+                mutableList.set(index, new GenericJsonValue(value, getAncestor()));
+            } catch (IndexOutOfBoundsException e) {
+                throw new JsonException("invalid index "+index);
+            }
+            return this;
+        }
+
+        @Override
+        public final MutableJsonStructure add(int index, JsonValue value) {
+            throwIfNotArray();
+            try {
+                mutableList.add(index, new GenericJsonValue(value, getAncestor()));
+            } catch (IndexOutOfBoundsException e) {
+                throw new JsonException("invalid index "+index);
+            }
+            return this;
+        }
+
+        @Override
+        public final MutableJsonStructure add(JsonValue value) {
+            throwIfNotArray();
+            mutableList.add(new GenericJsonValue(value, getAncestor()));
+            return this;
+        }
+
+        @Override
+        public MutableJsonStructure get(int index) {
+            try {
+                GenericJsonValue genericJsonValue = mutableList.get(index);
+                if (!genericJsonValue.isJsonValue()) {
+                    return genericJsonValue.getMutableStructure();
+                }
+            } catch (IndexOutOfBoundsException e) {
+                throw new JsonException("invalid index "+index);
+            }
+
+            throw new JsonException("not a mutable structure");
+        }
+
+        @Override
+        public MutableJsonStructure set(int index, MutableJsonStructure value) {
+            try {
+                mutableList.set(index, new GenericJsonValue(value));
+            } catch (IndexOutOfBoundsException e) {
+                throw new JsonException("invalid index "+index);
+            }
+            return this;
+        }
+
+        @Override
+        public MutableJsonStructure remove(int index) {
+            try {
+                mutableList.remove(index);
+            } catch (IndexOutOfBoundsException e) {
+                throw new JsonException("invalid index "+index);
+            }
+            return this;
+        }
+
+        @Override
+        public MutableJsonStructure add(int index, MutableJsonStructure value) {
+            try {
+                mutableList.add(index, new GenericJsonValue(value));
+            } catch (IndexOutOfBoundsException e) {
+                throw new JsonException("invalid index "+index);
+            }
+            return this;
+        }
+
+        @Override
+        public MutableJsonStructure add(MutableJsonStructure value) {
+            mutableList.add(new GenericJsonValue(value));
+            return this;
+        }
+
+        @Override
+        public JsonStructure toJsonStructure() {
+
+            JsonArrayBuilder builder = Json.createArrayBuilder();
+
+            for (Iterator<GenericJsonValue> iterator = mutableList.iterator(); iterator.hasNext();) {
+                GenericJsonValue genericJsonValue = iterator.next();
+
+                if (genericJsonValue.isJsonValue()) {
+                    builder.add(genericJsonValue.getJsonValue());
+                } else {
+                    builder.add(genericJsonValue.getMutableStructure().toJsonStructure());
+                }
+
+            }
+
+            return builder.build();
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((mutableList == null) ? 0 : mutableList.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            MutableJsonArray other = (MutableJsonArray) obj;
+            if (mutableList == null) {
+                if (other.mutableList != null)
+                    return false;
+            } else if (!mutableList.equals(other.mutableList))
+                return false;
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            StringWriter sw = new StringWriter();
+            try (JsonWriter jw = new JsonWriterImpl(sw, bufferPool)) {
+                jw.write((JsonArray) this.toJsonStructure());
+            }
+            return sw.toString();
+        }
+
+        @Override
+        public int size() {
+            return mutableList.size();
+        }
+
+        @Override
+        public JsonValue getLeaf(@SuppressWarnings("unused") String key) {
+            throwIfNotObject();
+            return null;
+        }
+        
+        @Override
+        public boolean isLeaf(int index) {
+            GenericJsonValue genericJsonValue = null;
+            try {
+                genericJsonValue = mutableList.get(index);
+            } catch (IndexOutOfBoundsException e) {
+                throw new JsonException("invalid index "+index);
+            }
+
+            return genericJsonValue.isJsonValue();
+        }
+
+        @Override
+        public boolean isLeaf(String key) {
+            throwIfNotObject();
+            throw new RuntimeException("cannot happen");
+        }
+
+        @Override
+        public MutableJsonStructure set(MutableJsonStructure value) {
+            mutableList.clear();
+            mutableList.addAll(((MutableJsonArray) value).mutableList);
+            return this;
+        }
+    }
 }
-
-
 

@@ -41,10 +41,11 @@
 package org.glassfish.json;
 
 
-import javax.json.stream.JsonLocation;
-import javax.json.stream.JsonParser;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+
+import javax.json.stream.JsonLocation;
+import javax.json.stream.JsonParser;
 
 /**
  * Defines string formatting method for each constant in the resource file
@@ -185,6 +186,23 @@ final class JsonMessages {
         return localize("arrbuilder.array.builder.null");
     }
 
+    
+    // mutable json structure messages
+    static String MUTABLE_OBJECT_ONLY() {
+        return localize("mutable.object.only");
+    }
+    
+    static String MUTABLE_ARRAY_ONLY() {
+        return localize("mutable.array.only");
+    }
+    
+    static String MUTABLE_STRUCTURE_ONLY() {
+        return localize("mutable.structure.only");
+    }
+    
+    static String POINTER_EXCEPTION() {
+        return localize("pointer.exception");
+    }
 
     private static String localize(String key, Object ... args) {
         try {

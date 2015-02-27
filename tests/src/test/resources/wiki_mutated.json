@@ -1,0 +1,19 @@
+{
+    "firstName":"Mister",
+    "lastName":"Spock",
+    "age":"unknown",
+    "address":{
+        "streetAddress":"21 2nd Street",
+        "city":"New York",
+        "state":"NY",
+        "postalCode":"10021",
+        "deceased":true
+    },
+    "phoneNumber":[
+        {
+            "type":"fax",
+            "number":"000"
+        },
+        null
+    ]
+}

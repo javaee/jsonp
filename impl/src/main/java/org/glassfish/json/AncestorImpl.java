@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,33 +38,71 @@
  * holder.
  */
 
+package org.glassfish.json;
+
+import javax.json.MutableJsonStructure;
+import javax.json.MutableJsonStructure.Ancestor;
+
 /**
- * Provides an object model API to process <a href="http://json.org/">JSON</a>.
- *
- * <p>The object model API is a high-level API that provides immutable object
- * models for JSON object and array structures. These JSON structures are
- * represented as object models using the Java types {@link javax.json.JsonObject}
- * and {@link javax.json.JsonArray}. The interface {@code javax.json.JsonObject} provides
- * a {@link java.util.Map} view to access the unordered collection of zero or
- * more name/value pairs from the model. Similarly, the interface
- * {@code JsonArray} provides a {@link java.util.List} view to access the
- * ordered sequence of zero or more values from the model.
- *
- * <p>The object model API uses builder patterns to create these object models. 
- * The classes {@link javax.json.JsonObjectBuilder} and 
- * {@link javax.json.JsonArrayBuilder} provide methods to create models
- * of type {@code JsonObject} and {@code JsonArray} respectively.
- *
- * <p>These object models can also be created from an input source using
- * the class {@link javax.json.JsonReader}. Similarly, these object models
- * can be written to an output source using the class {@link javax.json.JsonWriter}.
  * 
- * <p>Since JSON Processing 1.1 the {@link javax.json.MutableJsonStructure} class provides also a mutable object model.
- * A {@link javax.json.MutableJsonStructure} can be obtained through {@link javax.json.JsonStructure} <code>toMutableJsonStructure()</code>
- * and converted by back using {@link javax.json.MutableJsonStructure} <code>toJsonStructure()</code>.
- * 
+ * @author Hendrik Saly
  *
- * @since JSON Processing 1.0
- * @author Jitendra Kotamraju
  */
-package javax.json;
+class AncestorImpl implements Ancestor {
+
+    private final MutableJsonStructure mutableJsonStructure;
+    private final int index;
+    private final String key;
+
+    AncestorImpl(MutableJsonStructure mutableJsonStructure, String key) {
+        super();
+
+        if(mutableJsonStructure == null || mutableJsonStructure.isJsonArray())
+        {
+            throw new IllegalArgumentException();
+        }
+
+        this.mutableJsonStructure = mutableJsonStructure;
+        this.index = -1;
+        this.key = key;
+    }
+
+    AncestorImpl(MutableJsonStructure mutableJsonStructure, int index) {
+        super();
+
+        if(mutableJsonStructure == null || !mutableJsonStructure.isJsonArray())
+        {
+            throw new IllegalArgumentException();
+        }
+
+        this.mutableJsonStructure = mutableJsonStructure;
+        this.index = index;
+        this.key = null;
+    }
+
+    @Override
+    public MutableJsonStructure getMutableJsonStructure() {
+        return mutableJsonStructure;
+    }
+
+    @Override
+    public boolean isJsonArray() {
+        return mutableJsonStructure.isJsonArray();
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
+
+    @Override
+    public String getKey() {
+        return key;
+    }
+
+    @Override
+    public String toString() {
+        return isJsonArray()?String.valueOf(index):key;
+    }
+
+}

@@ -45,6 +45,18 @@ package javax.json;
  * and {@link JsonArray array}s).
  *
  * @author Jitendra Kotamraju
+ * @author Hendrik Saly
  */
 public interface JsonStructure extends JsonValue {
+
+    /**
+     * Convert this immutable JSON structure into a mutable representation by performing a deep copy.
+     * 
+     * <b>Depending on the size this can be a costly and a memory consuming operation. The mutable representation will consume
+     * at least the same amount of memory then the immutable structure.</b>
+     * 
+     * @return the mutable JSON structure
+     * @since JSON Processing 1.1
+     */
+    MutableJsonStructure toMutableJsonStructure();
 }

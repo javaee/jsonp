@@ -40,19 +40,39 @@
 
 package org.glassfish.json;
 
-import org.glassfish.json.api.BufferPool;
-
-import javax.json.JsonArrayBuilder;
-import javax.json.*;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonException;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
+import javax.json.JsonWriter;
+import javax.json.MutableJsonStructure;
+import javax.json.MutableJsonStructure.Ancestor;
+
+import org.glassfish.json.JsonArrayBuilderImpl.JsonArrayImpl;
+import org.glassfish.json.api.BufferPool;
 
 /**
  * JsonObjectBuilder impl
  *
  * @author Jitendra Kotamraju
+ * @author Hendrik Saly
  */
 class JsonObjectBuilderImpl implements JsonObjectBuilder {
     private Map<String, JsonValue> valueMap;
@@ -165,7 +185,7 @@ class JsonObjectBuilderImpl implements JsonObjectBuilder {
         }
     }
 
-    private static final class JsonObjectImpl extends AbstractMap<String, JsonValue> implements JsonObject {
+    static final class JsonObjectImpl extends AbstractMap<String, JsonValue> implements JsonObject {
         private final Map<String, JsonValue> valueMap;      // unmodifiable
         private final BufferPool bufferPool;
 
@@ -263,11 +283,220 @@ class JsonObjectBuilderImpl implements JsonObjectBuilder {
         @Override
         public String toString() {
             StringWriter sw = new StringWriter();
-            JsonWriter jw = new JsonWriterImpl(sw, bufferPool);
-            jw.write(this);
-            jw.close();
+            try (JsonWriter jw = new JsonWriterImpl(sw, bufferPool)) {
+                jw.write(this);
+            }
             return sw.toString();
         }
-    }
 
+        @Override
+        public MutableJsonStructure toMutableJsonStructure() {
+            return new MutableJsonObject(valueMap, bufferPool, null);
+        }
+        
+        MutableJsonStructure toMutableJsonStructure(Ancestor ancestor) {
+            return new MutableJsonObject(valueMap, bufferPool, ancestor);
+        }
+
+    }
+    
+    private static final class MutableJsonObject extends AbstractMutableJsonStructure {
+
+        private final Map<String, GenericJsonValue> mutableMap;
+        private final BufferPool bufferPool;
+
+        private MutableJsonObject(Map<String, JsonValue> map, BufferPool bufferPool, Ancestor ancestor) {
+            super(JsonValue.ValueType.OBJECT, ancestor);
+
+            this.mutableMap = new LinkedHashMap<String, GenericJsonValue>();
+
+            for (Iterator<Entry<String, JsonValue>> iterator = map.entrySet().iterator(); iterator.hasNext();) {
+                Entry<String, JsonValue> entry = iterator.next();
+                JsonValue value = entry.getValue();
+                final Ancestor ca = new AncestorImpl(this, entry.getKey());
+
+                if (value.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                    mutableMap.put(entry.getKey(), new GenericJsonValue(((JsonArrayImpl) value).toMutableJsonStructure(ca)));
+                } else if (value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+                    mutableMap.put(entry.getKey(), new GenericJsonValue(((JsonObjectImpl) value).toMutableJsonStructure(ca)));
+                } else {
+                    mutableMap.put(entry.getKey(), new GenericJsonValue(value, ca));
+                }
+
+            }
+
+            this.bufferPool = bufferPool;
+        }
+
+        @Override
+        public JsonValue getLeaf(String key) {
+            throwIfNotObject();
+            
+            if(!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '"+key+"'");
+            }
+            
+            GenericJsonValue genericJsonValue = mutableMap.get(key);
+            if (genericJsonValue.isJsonValue()) {
+                return genericJsonValue.getJsonValue();
+            }
+
+            throw new JsonException("not a value");
+
+        }
+
+        @Override
+        public final MutableJsonStructure set(String key, JsonValue value) {
+            throwIfNotObject();
+            
+            if(!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '"+key+"'");
+            }
+            
+            mutableMap.replace(key, new GenericJsonValue(value, getAncestor()));
+            return this;
+        }
+
+        @Override
+        public final MutableJsonStructure add(String key, JsonValue value) {
+            throwIfNotObject();
+            mutableMap.put(key, new GenericJsonValue(value, getAncestor()));
+            return this;
+        }
+
+        @Override
+        public MutableJsonStructure get(String key) {
+            GenericJsonValue genericJsonValue = mutableMap.get(key);
+            
+            if(genericJsonValue == null) {
+                throw new JsonException("no such key: '"+key+"'");
+            }
+            
+            if (!genericJsonValue.isJsonValue()) {
+                return genericJsonValue.getMutableStructure();
+            }
+
+            throw new JsonException("not a mutable structure");
+        }
+
+        @Override
+        public MutableJsonStructure set(String key, MutableJsonStructure value) {
+            
+            if(!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '"+key+"'");
+            }
+            
+            mutableMap.replace(key, new GenericJsonValue(value));
+            return this;
+        }
+
+        @Override
+        public MutableJsonStructure remove(String key) {
+            
+            if(!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '"+key+"'");
+            }
+            
+            mutableMap.remove(key);
+            return this;
+        }
+
+        @Override
+        public MutableJsonStructure add(String key, MutableJsonStructure value) {
+            mutableMap.put(key, new GenericJsonValue(value));
+            return this;
+        }
+
+        @Override
+        public JsonStructure toJsonStructure() {
+            JsonObjectBuilder builder = Json.createObjectBuilder();
+
+            for (Iterator<Entry<String, GenericJsonValue>> iterator = mutableMap.entrySet().iterator(); iterator.hasNext();) {
+                Entry<String, GenericJsonValue> entry = iterator.next();
+
+                if (entry.getValue().isJsonValue()) {
+                    builder.add(entry.getKey(), entry.getValue().getJsonValue());
+                } else {
+                    builder.add(entry.getKey(), entry.getValue().getMutableStructure().toJsonStructure());
+                }
+            }
+
+            return builder.build();
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((mutableMap == null) ? 0 : mutableMap.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            MutableJsonObject other = (MutableJsonObject) obj;
+            if (mutableMap == null) {
+                if (other.mutableMap != null)
+                    return false;
+            } else if (!mutableMap.equals(other.mutableMap))
+                return false;
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            StringWriter sw = new StringWriter();
+            try (JsonWriter jw = new JsonWriterImpl(sw, bufferPool)) {
+                jw.write((JsonObject) this.toJsonStructure());
+            }
+            return sw.toString();
+        }
+
+        @Override
+        public int size() {
+            return mutableMap.size();
+        }
+
+        @Override
+        public Set<String> getKeys() {
+            return mutableMap.keySet();
+        }
+
+        @Override
+        public JsonValue getLeaf(@SuppressWarnings("unused") int index) {
+            throwIfNotArray();
+            return null;
+        }
+        
+        @Override
+        public boolean isLeaf(@SuppressWarnings("unused") int index) {
+            throwIfNotArray();
+            throw new RuntimeException("cannot happen");
+        }
+
+        @Override
+        public boolean isLeaf(String key) {
+            
+            if(!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '"+key+"'");
+            }
+            
+            GenericJsonValue genericJsonValue = mutableMap.get(key);           
+            return genericJsonValue.isJsonValue();
+        }
+
+        @Override
+        public MutableJsonStructure set(MutableJsonStructure value) {
+            mutableMap.clear();
+            mutableMap.putAll(((MutableJsonObject) value).mutableMap);
+            return this;
+        }
+    }
+    
 }
