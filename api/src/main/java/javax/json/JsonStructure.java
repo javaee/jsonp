@@ -58,5 +58,7 @@ public interface JsonStructure extends JsonValue {
      * @return the mutable JSON structure
      * @since JSON Processing 1.1
      */
-    MutableJsonStructure toMutableJsonStructure();
+    default MutableJsonStructure toMutableJsonStructure() {
+        return null;
+    }
 }

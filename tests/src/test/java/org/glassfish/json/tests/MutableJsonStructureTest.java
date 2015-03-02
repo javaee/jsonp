@@ -99,6 +99,14 @@ public class MutableJsonStructureTest extends TestCase {
         JsonReader reader = Json.createReader(wikiReader);
         MutableJsonStructure ms = reader.readObject().toMutableJsonStructure();
         assertFalse(ms.isJsonArray());
+        
+        try {
+            ms.getKeys().add("test");
+            fail();
+        } catch (UnsupportedOperationException e) {
+            //expected
+        }
+        
         assertNotSame(ms, ms.copy());
         assertTrue(ms.isLeaf("age"));
         assertFalse(ms.isLeaf("address"));
