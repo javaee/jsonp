@@ -332,7 +332,7 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
                     return genericJsonValue.getJsonValue();
                 }
             } catch (IndexOutOfBoundsException e) {
-                throw new JsonException("invalid index "+index);
+                throw new JsonException("invalid index " + index);
             }
 
             throw new JsonException("not a value");
@@ -344,7 +344,7 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
             try {
                 mutableList.set(index, new GenericJsonValue(value, getAncestor()));
             } catch (IndexOutOfBoundsException e) {
-                throw new JsonException("invalid index "+index);
+                throw new JsonException("invalid index " + index);
             }
             return this;
         }
@@ -355,7 +355,7 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
             try {
                 mutableList.add(index, new GenericJsonValue(value, getAncestor()));
             } catch (IndexOutOfBoundsException e) {
-                throw new JsonException("invalid index "+index);
+                throw new JsonException("invalid index " + index);
             }
             return this;
         }
@@ -375,7 +375,7 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
                     return genericJsonValue.getMutableStructure();
                 }
             } catch (IndexOutOfBoundsException e) {
-                throw new JsonException("invalid index "+index);
+                throw new JsonException("invalid index " + index);
             }
 
             throw new JsonException("not a mutable structure");
@@ -386,7 +386,7 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
             try {
                 mutableList.set(index, new GenericJsonValue(value));
             } catch (IndexOutOfBoundsException e) {
-                throw new JsonException("invalid index "+index);
+                throw new JsonException("invalid index " + index);
             }
             return this;
         }
@@ -396,7 +396,7 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
             try {
                 mutableList.remove(index);
             } catch (IndexOutOfBoundsException e) {
-                throw new JsonException("invalid index "+index);
+                throw new JsonException("invalid index " + index);
             }
             return this;
         }
@@ -406,7 +406,7 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
             try {
                 mutableList.add(index, new GenericJsonValue(value));
             } catch (IndexOutOfBoundsException e) {
-                throw new JsonException("invalid index "+index);
+                throw new JsonException("invalid index " + index);
             }
             return this;
         }
@@ -480,14 +480,14 @@ class JsonArrayBuilderImpl implements JsonArrayBuilder {
             throwIfNotObject();
             return null;
         }
-        
+
         @Override
         public boolean isLeaf(int index) {
             GenericJsonValue genericJsonValue = null;
             try {
                 genericJsonValue = mutableList.get(index);
             } catch (IndexOutOfBoundsException e) {
-                throw new JsonException("invalid index "+index);
+                throw new JsonException("invalid index " + index);
             }
 
             return genericJsonValue.isJsonValue();

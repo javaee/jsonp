@@ -45,10 +45,12 @@ import java.util.Set;
 /**
  * A mutable and navigable object representation of a JSON text.
  * <p>
- * The leafs of this tree are immutable JsonValues and are never of {@code JsonValue.ValueType} ARRAY or OBJECT but NUMBER or STRING or TRUE or FALSE or NULL.
+ * The leafs of this tree are immutable JsonValues and are never of
+ * {@code JsonValue.ValueType} ARRAY or OBJECT but NUMBER or STRING or TRUE or
+ * FALSE or NULL.
  * <p>
  * The mutation methods provides functionality for
- * <p>
+ * 
  * <ul>
  * <li>adding either a {@code JsonValue} or a {@code MutableJsonStructure}
  * through <code>add()</code></li>
@@ -72,8 +74,9 @@ import java.util.Set;
  * </code>
  * </pre>
  * 
- * A new mutable tree can also be obtained with the static method MutableJsonStructure.createNewMutableObject()
- * or MutableJsonStructure.createNewMutableArray()
+ * A new mutable tree can also be obtained with the static method
+ * MutableJsonStructure.createNewMutableObject() or
+ * MutableJsonStructure.createNewMutableArray()
  * 
  * With every {@code MutableJsonStructure} an {@code Ancestor} is associated.
  * For the top level structure the ancestor is null. Through the
@@ -102,222 +105,224 @@ import java.util.Set;
  * @author Hendrik Saly
  */
 public interface MutableJsonStructure {
-    
+
     /**
      * Create new empty mutable JSON object
      * 
      * @return new empty mutable JSON object
      */
     public static MutableJsonStructure createNewMutableObject() {
-	//implementation is not performant, could be done better
-	return Json.createObjectBuilder().build().toMutableJsonStructure().copy();
+        // implementation is not performant, could be done better
+        return Json.createObjectBuilder().build().toMutableJsonStructure()
+                .copy();
     }
-    
+
     /**
      * Create new empty mutable JSON array
      * 
      * @return new empty mutable JSON array
      */
     public static MutableJsonStructure createNewMutableArray() {
-	//implementation is not performant, could be done better
-	return Json.createArrayBuilder().build().toMutableJsonStructure().copy();
+        // implementation is not performant, could be done better
+        return Json.createArrayBuilder().build().toMutableJsonStructure()
+                .copy();
     }
-    
+
     /**
-     * Represent the ancestor of a {@code MutableJsonStructure}. Contains also the
-     * information to which key (if ancestor is an JSON object) or index (if
+     * Represent the ancestor of a {@code MutableJsonStructure}. Contains also
+     * the information to which key (if ancestor is an JSON object) or index (if
      * ancestor is an JSON array) the mutable structure is attached.
      */
     public interface Ancestor {
 
-	/**
-	 * The ancestor index (only valid if this ancestor is an JSON array)
-	 * 
-	 * @return The zero-based ancestor index or -1 if this ancestor is a
-	 *         JSON object
-	 */
-	int getIndex();
+        /**
+         * The ancestor index (only valid if this ancestor is an JSON array)
+         * 
+         * @return The zero-based ancestor index or -1 if this ancestor is a
+         *         JSON object
+         */
+        int getIndex();
 
-	/**
-	 * The ancestor key name (only valid if this ancestor is an JSON object)
-	 * 
-	 * @return The ancestor key name or {@code null} if this ancestor is a
-	 *         JSON array
-	 */
-	String getKey();
+        /**
+         * The ancestor key name (only valid if this ancestor is an JSON object)
+         * 
+         * @return The ancestor key name or {@code null} if this ancestor is a
+         *         JSON array
+         */
+        String getKey();
 
-	/**
-	 * The ancestor structure (parent)
-	 * 
-	 * @return the ancestor mutable structure
-	 */
-	MutableJsonStructure getMutableJsonStructure();
+        /**
+         * The ancestor structure (parent)
+         * 
+         * @return the ancestor mutable structure
+         */
+        MutableJsonStructure getMutableJsonStructure();
 
-	/**
-	 * Is this ancestor a JSON array (or an JSON object)?
-	 * 
-	 * @return true if the ancestor is a JSON array, false if JSON object
-	 */
-	boolean isJsonArray();
+        /**
+         * Is this ancestor a JSON array (or an JSON object)?
+         * 
+         * @return true if the ancestor is a JSON array, false if JSON object
+         */
+        boolean isJsonArray();
     }
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @param value
-     * @return
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(int index, JsonValue value);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @param value
-     * @return
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(int index, MutableJsonStructure value);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @param value
-     * @return
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(int index, Number value);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @param value
-     * @return
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(int index, String value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param index
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonPointer jsonPointer, int index, JsonValue value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param index
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonPointer jsonPointer, int index,
-	    MutableJsonStructure value);
+            MutableJsonStructure value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param index
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonPointer jsonPointer, int index, Number value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param index
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonPointer jsonPointer, int index, String value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param key
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonPointer jsonPointer, String key,
-	    JsonValue value);
+            JsonValue value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param key
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonPointer jsonPointer, String key,
-	    MutableJsonStructure value);
+            MutableJsonStructure value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param key
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonPointer jsonPointer, String key, Number value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param key
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonPointer jsonPointer, String key, String value);
 
     /**
      * Append the given value to this JSON array
      * 
-     * @param value
-     * @return
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(JsonValue value);
 
     /**
      * Append the given value to this JSON array
      * 
-     * @param value
-     * @return
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(MutableJsonStructure value);
 
     /**
      * Append the given value to this JSON array
      * 
-     * @param value
-     * @return
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(Number value);
 
     /**
      * Append the given value to this JSON array
      * 
-     * @param value
-     * @return
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(String value);
 
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @param value
-     * @return
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(String key, JsonValue value);
 
@@ -339,24 +344,24 @@ public interface MutableJsonStructure {
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @param value
-     * @return
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(String key, Number value);
 
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @param value
-     * @return
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure add(String key, String value);
-    
+
     /**
-     * Returns a deep copy of this structure. 
-     * Modifying the content of the returned structure does not affect each other at all.
+     * Returns a deep copy of this structure. Modifying the content of the
+     * returned structure does not affect each other at all.
      * 
      * @return the copy
      */
@@ -380,8 +385,9 @@ public interface MutableJsonStructure {
     /**
      * Check if the given index exists.
      * 
-     * @param index given index
-     * @return true if index < size(), false otherwise
+     * @param index
+     *            given index
+     * @return true if index &lt; size(), false otherwise
      * @throws JsonException
      *             if current structure is not an JSON array
      */
@@ -390,7 +396,7 @@ public interface MutableJsonStructure {
     /**
      * Check if the given pointer points to a value that exists.
      * 
-     * @param jsonPointer
+     * @param jsonPointer TBD
      * @return true if the pointer points to an existent value, false otherwise
      */
     boolean exists(JsonPointer jsonPointer);
@@ -398,7 +404,8 @@ public interface MutableJsonStructure {
     /**
      * Check if given key exists.
      * 
-     * @param key given key
+     * @param key
+     *            given key
      * @return true if getKeys().contains(key), false otherwise
      * @throws JsonException
      *             if current structure is not an JSON object
@@ -462,7 +469,8 @@ public interface MutableJsonStructure {
     /**
      * Get the key names for the current JSON object
      * 
-     * @return the key names for the current JSON object
+     * @return the key names for the current JSON object as an immutable
+     *         {@link Set}
      * @throws JsonException
      *             if this {@code MutableJsonStructure} is not an JSON object
      */
@@ -471,16 +479,16 @@ public interface MutableJsonStructure {
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @return
+     * @param index TBD
+     * @return TBD
      */
     JsonValue getLeaf(int index);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @return
+     * @param jsonPointer TBD
+     * @return TBD
      */
     JsonValue getLeaf(JsonPointer jsonPointer);
 
@@ -501,48 +509,48 @@ public interface MutableJsonStructure {
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @return
+     * @param index TBD
+     * @return TBD
      */
     boolean getLeafAsBoolean(int index);
 
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @return
+     * @param key TBD
+     * @return TBD
      */
     boolean getLeafAsBoolean(String key);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @return
+     * @param index TBD
+     * @return TBD
      */
     int getLeafAsInt(int index);
 
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @return
+     * @param key TBD
+     * @return TBD
      */
     int getLeafAsInt(String key);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @return
+     * @param index TBD
+     * @return TBD
      */
     String getLeafAsString(int index);
 
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @return
+     * @param key TBD
+     * @return TBD
      */
     String getLeafAsString(String key);
 
@@ -575,23 +583,24 @@ public interface MutableJsonStructure {
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @return
+     * @param index TBD
+     * @return TBD
      */
     boolean isLeaf(int index);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @return
+     * @param jsonPointer TBD
+     * @return TBD
      */
     boolean isLeaf(JsonPointer jsonPointer);
 
     /**
      * Check if the given key's value is a leaf (or a mutable structure)
      * 
-     * @param key given key
+     * @param key
+     *            given key
      * @return true if the given key key's value is a {@code JsonValue}
      */
     boolean isLeaf(String key);
@@ -599,32 +608,32 @@ public interface MutableJsonStructure {
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @return
+     * @param index TBD
+     * @return TBD
      */
     boolean isLeafNull(int index);
 
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @return
+     * @param key TBD
+     * @return TBD
      */
     boolean isLeafNull(String key);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @return
+     * @param index TBD
+     * @return TBD
      */
     MutableJsonStructure remove(int index);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @return
+     * @param jsonPointer TBD
+     * @return TBD
      */
     MutableJsonStructure remove(JsonPointer jsonPointer);
 
@@ -645,72 +654,72 @@ public interface MutableJsonStructure {
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @param value
-     * @return
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(int index, JsonValue value);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @param value
-     * @return
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(int index, MutableJsonStructure value);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @param value
-     * @return
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(int index, Number value);
 
     /**
      * analogous, TBD
      * 
-     * @param index
-     * @param value
-     * @return
+     * @param index TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(int index, String value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(JsonPointer jsonPointer, JsonValue value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(JsonPointer jsonPointer, MutableJsonStructure value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(JsonPointer jsonPointer, Number value);
 
     /**
      * analogous, TBD
      * 
-     * @param jsonPointer
-     * @param value
-     * @return
+     * @param jsonPointer TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(JsonPointer jsonPointer, String value);
 
@@ -718,17 +727,17 @@ public interface MutableJsonStructure {
      * This replaces the current {@code MutableJsonStructure} value with the
      * given one. This does NOT change object references.
      * 
-     * @param value
-     * @return
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(MutableJsonStructure value);
 
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @param value
-     * @return
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(String key, JsonValue value);
 
@@ -751,18 +760,18 @@ public interface MutableJsonStructure {
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @param value
-     * @return
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(String key, Number value);
 
     /**
      * analogous, TBD
      * 
-     * @param key
-     * @param value
-     * @return
+     * @param key TBD
+     * @param value TBD
+     * @return TBD
      */
     MutableJsonStructure set(String key, String value);
 
@@ -771,7 +780,7 @@ public interface MutableJsonStructure {
      * object, number of array members for a JSON array)
      * 
      * @return the size of the JSON object or JSON array
-     * @throws
+     * @throws JsonException TBD
      */
     int size();
 

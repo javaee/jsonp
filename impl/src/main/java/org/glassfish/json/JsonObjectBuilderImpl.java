@@ -331,11 +331,11 @@ class JsonObjectBuilderImpl implements JsonObjectBuilder {
         @Override
         public JsonValue getLeaf(String key) {
             throwIfNotObject();
-            
-            if(!mutableMap.containsKey(key)) {
-                throw new JsonException("no such key: '"+key+"'");
+
+            if (!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '" + key + "'");
             }
-            
+
             GenericJsonValue genericJsonValue = mutableMap.get(key);
             if (genericJsonValue.isJsonValue()) {
                 return genericJsonValue.getJsonValue();
@@ -348,11 +348,11 @@ class JsonObjectBuilderImpl implements JsonObjectBuilder {
         @Override
         public final MutableJsonStructure set(String key, JsonValue value) {
             throwIfNotObject();
-            
-            if(!mutableMap.containsKey(key)) {
-                throw new JsonException("no such key: '"+key+"'");
+
+            if (!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '" + key + "'");
             }
-            
+
             mutableMap.replace(key, new GenericJsonValue(value, getAncestor()));
             return this;
         }
@@ -367,11 +367,11 @@ class JsonObjectBuilderImpl implements JsonObjectBuilder {
         @Override
         public MutableJsonStructure get(String key) {
             GenericJsonValue genericJsonValue = mutableMap.get(key);
-            
-            if(genericJsonValue == null) {
-                throw new JsonException("no such key: '"+key+"'");
+
+            if (genericJsonValue == null) {
+                throw new JsonException("no such key: '" + key + "'");
             }
-            
+
             if (!genericJsonValue.isJsonValue()) {
                 return genericJsonValue.getMutableStructure();
             }
@@ -381,22 +381,22 @@ class JsonObjectBuilderImpl implements JsonObjectBuilder {
 
         @Override
         public MutableJsonStructure set(String key, MutableJsonStructure value) {
-            
-            if(!mutableMap.containsKey(key)) {
-                throw new JsonException("no such key: '"+key+"'");
+
+            if (!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '" + key + "'");
             }
-            
+
             mutableMap.replace(key, new GenericJsonValue(value));
             return this;
         }
 
         @Override
         public MutableJsonStructure remove(String key) {
-            
-            if(!mutableMap.containsKey(key)) {
-                throw new JsonException("no such key: '"+key+"'");
+
+            if (!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '" + key + "'");
             }
-            
+
             mutableMap.remove(key);
             return this;
         }
@@ -473,7 +473,7 @@ class JsonObjectBuilderImpl implements JsonObjectBuilder {
             throwIfNotArray();
             return null;
         }
-        
+
         @Override
         public boolean isLeaf(@SuppressWarnings("unused") int index) {
             throwIfNotArray();
@@ -482,12 +482,12 @@ class JsonObjectBuilderImpl implements JsonObjectBuilder {
 
         @Override
         public boolean isLeaf(String key) {
-            
-            if(!mutableMap.containsKey(key)) {
-                throw new JsonException("no such key: '"+key+"'");
+
+            if (!mutableMap.containsKey(key)) {
+                throw new JsonException("no such key: '" + key + "'");
             }
-            
-            GenericJsonValue genericJsonValue = mutableMap.get(key);           
+
+            GenericJsonValue genericJsonValue = mutableMap.get(key);
             return genericJsonValue.isJsonValue();
         }
 

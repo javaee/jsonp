@@ -56,172 +56,167 @@ public class JsonPointer {
 
     private final static String WHOLE_DOCUMENT_POINTER_VALUE = "";
     public final static JsonPointer WHOLE_DOCUMENT_POINTER = new JsonPointer(
-	    WHOLE_DOCUMENT_POINTER_VALUE);
+            WHOLE_DOCUMENT_POINTER_VALUE);
 
     private final String pointerValue;
 
     public JsonPointer(String pointerValue) {
-	this(null, pointerValue);
+        this(null, pointerValue);
     }
 
     public JsonPointer(JsonPointer parent, String pointerValue) {
 
-	if (pointerValue == null) {
-	    throw new IllegalArgumentException("must not be null");
-	}
+        if (pointerValue == null) {
+            throw new IllegalArgumentException("must not be null");
+        }
 
-	if (!WHOLE_DOCUMENT_POINTER_VALUE.equals(pointerValue)
-		&& !pointerValue.startsWith("/")) {
-	    throw new IllegalArgumentException("must start with /");
-	}
+        if (!WHOLE_DOCUMENT_POINTER_VALUE.equals(pointerValue)
+                && !pointerValue.startsWith("/")) {
+            throw new IllegalArgumentException("must start with /");
+        }
 
-	if (!pointerValue.equals("/") && pointerValue.endsWith("/")) {
-	    throw new IllegalArgumentException("must not end with /");
-	}
+        if (!pointerValue.equals("/") && pointerValue.endsWith("/")) {
+            throw new IllegalArgumentException("must not end with /");
+        }
 
-	this.pointerValue = (parent == null ? "" : parent.getPointerValue())
-		+ pointerValue;
+        this.pointerValue = (parent == null ? "" : parent.getPointerValue())
+                + pointerValue;
     }
 
     @Override
     public int hashCode() {
-	final int prime = 31;
-	int result = 1;
-	result = prime * result
-		+ ((pointerValue == null) ? 0 : pointerValue.hashCode());
-	return result;
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((pointerValue == null) ? 0 : pointerValue.hashCode());
+        return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-	if (this == obj)
-	    return true;
-	if (obj == null)
-	    return false;
-	if (getClass() != obj.getClass())
-	    return false;
-	JsonPointer other = (JsonPointer) obj;
-	if (pointerValue == null) {
-	    if (other.pointerValue != null)
-		return false;
-	} else if (!pointerValue.equals(other.pointerValue))
-	    return false;
-	return true;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        JsonPointer other = (JsonPointer) obj;
+        if (pointerValue == null) {
+            if (other.pointerValue != null)
+                return false;
+        } else if (!pointerValue.equals(other.pointerValue))
+            return false;
+        return true;
     }
 
     @Override
     public String toString() {
-	return pointerValue;
+        return pointerValue;
     }
 
     public String getPointerValue() {
-	return pointerValue;
+        return pointerValue;
     }
 
     public JsonPointer getParent() {
 
-	if (WHOLE_DOCUMENT_POINTER_VALUE.equals(pointerValue)) {
-	    return this;
-	}
+        if (WHOLE_DOCUMENT_POINTER_VALUE.equals(pointerValue)) {
+            return this;
+        }
 
-	int index = pointerValue.lastIndexOf("/");
+        int index = pointerValue.lastIndexOf("/");
 
-	if (index < 1)
-	    return WHOLE_DOCUMENT_POINTER;
+        if (index < 1)
+            return WHOLE_DOCUMENT_POINTER;
 
-	return new JsonPointer(pointerValue.substring(0, index));
+        return new JsonPointer(pointerValue.substring(0, index));
     }
 
     public boolean isParentOf(JsonPointer probablyChildPointer) {
-	if (probablyChildPointer.pointerValue.startsWith(this.pointerValue)
-		&& !this.equals(probablyChildPointer)) {
-	    return true;
-	}
+        if (probablyChildPointer.pointerValue.startsWith(this.pointerValue)
+                && !this.equals(probablyChildPointer)) {
+            return true;
+        }
 
-	return false;
+        return false;
     }
 
     public List<PointerToken> getTokens() {
-	return Arrays.asList(pointerValue.split("/")).stream()
-		.filter(t -> !t.isEmpty()).map(t -> new PointerToken(t))
-		.collect(Collectors.toList());
+        return Arrays.asList(pointerValue.split("/")).stream()
+                .filter(t -> !t.isEmpty()).map(t -> new PointerToken(t))
+                .collect(Collectors.toList());
     }
 
     public PointerToken getLastToken() {
-	List<PointerToken> tokens = getTokens();
-	if (tokens.size() == 0) {
-	    return new PointerToken("");
-	}
+        List<PointerToken> tokens = getTokens();
+        if (tokens.size() == 0) {
+            return new PointerToken("");
+        }
 
-	return tokens.get(tokens.size() - 1);
+        return tokens.get(tokens.size() - 1);
     }
 
     public static class PointerToken {
 
-	private final String token;
+        private final String token;
 
-	PointerToken(String token) {
-	    super();
+        PointerToken(String token) {
+            super();
 
-	    if (token == null) {
-		throw new IllegalArgumentException();
-	    }
+            if (token == null) {
+                throw new IllegalArgumentException();
+            }
 
-	    this.token = token.replace("~1", "/").replace("~0", "~");
-	}
+            this.token = token.replace("~1", "/").replace("~0", "~");
+        }
 
-	public int getTokenAsIndex(int arraySize) {
+        public int getTokenAsIndex(int arraySize) {
 
-	    if ("-".equals(token)) {
-		return arraySize;
-	    }
+            if ("-".equals(token)) {
+                return arraySize;
+            }
 
-	    try {
-		return Integer.parseUnsignedInt(token);
-	    } catch (NumberFormatException e) {
-		throw new JsonException("token '" + token + "' is not a number");
-	    }
+            try {
+                return Integer.parseUnsignedInt(token);
+            } catch (NumberFormatException e) {
+                throw new JsonException("token '" + token + "' is not a number");
+            }
 
-	}
+        }
 
-	public String getToken() {
+        public String getToken() {
+            return token;
+        }
 
-	    if ("-".equals(token)) {
-		throw new JsonException("illegal '-' token");
-	    }
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((token == null) ? 0 : token.hashCode());
+            return result;
+        }
 
-	    return token;
-	}
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            PointerToken other = (PointerToken) obj;
+            if (token == null) {
+                if (other.token != null)
+                    return false;
+            } else if (!token.equals(other.token))
+                return false;
+            return true;
+        }
 
-	@Override
-	public int hashCode() {
-	    final int prime = 31;
-	    int result = 1;
-	    result = prime * result + ((token == null) ? 0 : token.hashCode());
-	    return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-	    if (this == obj)
-		return true;
-	    if (obj == null)
-		return false;
-	    if (getClass() != obj.getClass())
-		return false;
-	    PointerToken other = (PointerToken) obj;
-	    if (token == null) {
-		if (other.token != null)
-		    return false;
-	    } else if (!token.equals(other.token))
-		return false;
-	    return true;
-	}
-
-	@Override
-	public String toString() {
-	    return token;
-	}
+        @Override
+        public String toString() {
+            return token;
+        }
 
     }
 }

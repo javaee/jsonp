@@ -217,7 +217,7 @@ abstract class AbstractMutableJsonStructure implements MutableJsonStructure {
     @Override
     public final JsonValue getLeaf(JsonPointer jsonPointer) {
         throwIfNotStructure();
-        
+
         boolean arraySpecial = "-".equals(jsonPointer.getLastToken().toString());
 
         if (arraySpecial) {
@@ -733,7 +733,7 @@ abstract class AbstractMutableJsonStructure implements MutableJsonStructure {
     public boolean exists(int index) {
         return index < size();
     }
-    
+
     @Override
     public MutableJsonStructure copy() {
         //can be done better, not very performant here

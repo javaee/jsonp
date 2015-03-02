@@ -57,8 +57,7 @@ class AncestorImpl implements Ancestor {
     AncestorImpl(MutableJsonStructure mutableJsonStructure, String key) {
         super();
 
-        if(mutableJsonStructure == null || mutableJsonStructure.isJsonArray())
-        {
+        if (mutableJsonStructure == null || mutableJsonStructure.isJsonArray()) {
             throw new IllegalArgumentException();
         }
 
@@ -70,8 +69,7 @@ class AncestorImpl implements Ancestor {
     AncestorImpl(MutableJsonStructure mutableJsonStructure, int index) {
         super();
 
-        if(mutableJsonStructure == null || !mutableJsonStructure.isJsonArray())
-        {
+        if (mutableJsonStructure == null || !mutableJsonStructure.isJsonArray()) {
             throw new IllegalArgumentException();
         }
 
@@ -102,7 +100,7 @@ class AncestorImpl implements Ancestor {
 
     @Override
     public String toString() {
-        return isJsonArray()?String.valueOf(index):key;
+        return isJsonArray() ? String.valueOf(index) : key;
     }
 
 }
