@@ -172,6 +172,7 @@ public interface JsonArray extends JsonStructure, List<JsonValue> {
      * method returns.
      *
      * @param clazz a JsonValue type
+     * @param <T> type to return the list for
      * @return a list view of the  specified type
      */
     <T extends JsonValue> List<T> getValuesAs(Class<T> clazz);
@@ -195,6 +196,7 @@ public interface JsonArray extends JsonStructure, List<JsonValue> {
      * the specified default value is returned.
      *
      * @param index index of the JsonString value
+     * @param defaultValue a default value to be returned
      * @return the String value at the specified position in this array,
      * or the specified default value
      */
@@ -219,6 +221,7 @@ public interface JsonArray extends JsonStructure, List<JsonValue> {
      * this method returns the specified default value.
      *
      * @param index index of the {@code JsonNumber} value
+     * @param defaultValue a default value to be returned
      * @return the int value at the specified position in this array,
      * or the specified default value
      */
@@ -246,6 +249,7 @@ public interface JsonArray extends JsonStructure, List<JsonValue> {
      * Otherwise this method returns the specified default value.
      *
      * @param index index of the JSON boolean value
+     * @param defaultValue a default value to be returned
      * @return the boolean value at the specified position,
      * or the specified default value
      */
