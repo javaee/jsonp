@@ -1,0 +1,16 @@
+theme: jekyll-theme-architect
+
+title: [jsonp]
+description: [RI for Java API for JSON Processing]
+
+# sidebar links url
+links:
+  source: https://github.com/javaee/jsonp
+  #download:
+  #mailinglist:
+  #javadocs:
+  #docs:
+  #faq:
+  #mailinglist:
+  #hide_issuetracker: true #set explicitly to 'true' if you don't want to have the issue tracker link displayed
+
