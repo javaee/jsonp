@@ -1,8 +1,8 @@
 # About
 
-Welcome to the jsonp project.
+Welcome to the JSON-P project.
 
-
+Navigate to http://javaee.github.io/jsonp to see the website in live
 
 # IMPORTANT!
 
