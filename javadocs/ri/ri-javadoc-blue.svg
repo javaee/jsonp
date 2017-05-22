@@ -105,10 +105,10 @@
        x="105"
        y="15"
        id="text26"
-       style="fill:#010101;fill-opacity:0.3">1.1.0-SNAPSHOT</text>
+       style="fill:#010101;fill-opacity:0.3">1.1</text>
     <text
        x="105"
        y="14"
-       id="text28">1.1.0-SNAPSHOT</text>
+       id="text28">1.1</text>
   </g>
 </svg>
