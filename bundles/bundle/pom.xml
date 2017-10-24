@@ -212,21 +212,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                            <debug>true</debug>
-                            <verbose>true</verbose>
-                            <!--                            <additionalDependencies>
-                                <additionalDependency>
-                                    <groupId>javax.json</groupId>
-                                    <artifactId>javax.json-api</artifactId>
-                                    <version>${project.version}</version>
-                                </additionalDependency>
-                            </additionalDependencies>-->
-                        </configuration>
-                    </plugin>
-                    <plugin>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>maven-bundle-plugin</artifactId>
                         <configuration>
