@@ -548,16 +548,20 @@ class JsonGeneratorImpl implements JsonGenerator {
     //   begin       end                   begin         end
     void writeEscapedString(String string) {
         writeChar('"');
-        int len = string.length();
-        for(int i = 0; i < len; i++) {
-            int begin = i, end = i;
-            char c = string.charAt(i);
+        int slen = string.length();
+        for(int i = 0; i < slen; i++) {
+            int cp = string.codePointAt(i);
+            int cc = Character.charCount(cp);
+            int begin = i, end = cc == 1 ? i : i + 1;
+
             // find all the characters that need not be escaped
             // unescaped = %x20-21 | %x23-5B | %x5D-10FFFF
-            while(c >= 0x20 && c <= 0x10ffff && c != 0x22 && c != 0x5c) {
-                i++; end = i;
-                if (i < len) {
-                    c = string.charAt(i);
+            while(cp >= 0x20 && cp <= 0x10ffff && cp != 0x22 && cp != 0x5c) {
+                i += cc;
+                end = i;
+                if (i < slen) {
+                    cp = string.codePointAt(i);
+                    cc = Character.charCount(cp);
                 } else {
                     break;
                 }
@@ -565,33 +569,36 @@ class JsonGeneratorImpl implements JsonGenerator {
             // Write characters without escaping
             if (begin < end) {
                 writeString(string, begin, end);
-                if (i == len) {
+                if (i == slen) {
                     break;
                 }
             }
 
-            switch (c) {
-                case '"':
-                case '\\':
-                    writeChar('\\'); writeChar(c);
+            switch (cp) {
+                case 0x22:
+                case 0x5c:
+                    writeChar('\\'); writeChar((char) cp);
                     break;
-                case '\b':
+                case 0x8:
                     writeChar('\\'); writeChar('b');
                     break;
-                case '\f':
+                case 0xc:
                     writeChar('\\'); writeChar('f');
                     break;
-                case '\n':
+                case 0xa:
                     writeChar('\\'); writeChar('n');
                     break;
-                case '\r':
+                case 0xd:
                     writeChar('\\'); writeChar('r');
                     break;
-                case '\t':
+                case 0x9:
                     writeChar('\\'); writeChar('t');
                     break;
+                case 0xb:
+                    writeChar('\\'); writeChar('v');
+                    break;
                 default:
-                    String hex = "000" + Integer.toHexString(c);
+                    String hex = "000" + Integer.toHexString(cp);
                     writeString("\\u" + hex.substring(hex.length() - 4));
             }
         }
