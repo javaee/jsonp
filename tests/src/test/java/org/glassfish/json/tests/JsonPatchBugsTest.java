@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,32 @@
  * holder.
  */
 
-module org.glassfish.java.json {
-    requires transitive java.json;
-    exports org.glassfish.json.api;
-    provides javax.json.spi.JsonProvider with org.glassfish.json.JsonProviderImpl;
+package org.glassfish.json.tests;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonPatch;
+import org.junit.Test;
+
+/**
+ *
+ * @author lukas
+ */
+public class JsonPatchBugsTest {
+
+    // https://github.com/javaee/jsonp/issues/58
+    @Test(expected = JsonException.class)
+    public void applyThrowsJsonException() {
+        JsonArray array = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                        .add("name", "Bob")
+                        .build())
+                .build();
+        JsonPatch patch = Json.createPatchBuilder()
+                .replace("/0/name", "Bobek")
+                .replace("/1/name", "Vila Amalka")
+                .build();
+        JsonArray result = patch.apply(array);
+    }
 }

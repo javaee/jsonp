@@ -59,52 +59,13 @@
     <description>Default provider for JSR 374:Java API for Processing JSON</description>
     <url>https://javaee.github.io/jsonp</url>
 
+    <properties>
+        <packages.private>org.glassfish.json</packages.private>
+        <packages.export>org.glassfish.json.api</packages.export>
+    </properties>
+
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack-client-sources</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>javax.json</groupId>
-                                    <artifactId>javax.json-api</artifactId>
-                                    <version>${project.version}</version>
-                                    <classifier>sources</classifier>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/sources</outputDirectory>
-                                    <includes>javax/json/**</includes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>add-x-sources</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.build.directory}/sources</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>spec-version-maven-plugin</artifactId>
@@ -117,8 +78,8 @@
                         <specImplVersion>${new_spec_impl_version}</specImplVersion>
                         <implVersion>${impl_version}</implVersion>
                         <newImplVersion>${new_impl_version}</newImplVersion>
-                        <apiPackage>javax.json</apiPackage>
-                        <implNamespace>org.glassfish</implNamespace>
+                        <apiPackage>${api_package}</apiPackage>
+                        <implNamespace>${impl_namespace}</implNamespace>
                     </spec>
                 </configuration>
                 <executions>
@@ -127,22 +88,6 @@
                             <goal>set-spec-properties</goal>
                             <goal>check-module</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-source-jar</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>sources</classifier>
-                            <classesDirectory>${project.build.directory}/sources</classesDirectory>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -186,7 +131,6 @@
         <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -202,7 +146,15 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
-                            <includeDependencySources>false</includeDependencySources>
+                            <!--
+                               workaround for https://issues.apache.org/jira/browse/MJAVADOC-489
+                            -->
+                            <additionalJOptions>
+                                <additionalJOption>--add-modules</additionalJOption>
+                                <additionalJOption>java.json</additionalJOption>
+                                <additionalJOption>--module-path</additionalJOption>
+                                <additionalJOption>${project.build.directory}/../../api/target/javax.json-api-${project.version}.jar</additionalJOption>
+                            </additionalJOptions>
                         </configuration>
                     </plugin>
                     <plugin>
