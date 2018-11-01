@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013-2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2018 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -94,7 +94,7 @@ import java.math.BigInteger;
  * </code>
  * </pre>
  *
- * <p>This class does <em>not</em> allow <tt>null</tt> to be used as a
+ * <p>This class does <em>not</em> allow <code>null</code> to be used as a
  * value while building the JSON array
  *
  * @see JsonObjectBuilder

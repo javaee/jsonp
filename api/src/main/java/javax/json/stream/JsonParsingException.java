@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2018 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,7 +73,7 @@ public class JsonParsingException extends JsonException {
      * @param message the detail message (which is saved for later retrieval
      *                by the {@link #getMessage()} method).
      * @param cause the cause (which is saved for later retrieval by the
-     *              {@link #getCause()} method). (A <tt>null</tt> value is
+     *              {@link #getCause()} method). (A <code>null</code> value is
      *              permitted, and indicates that the cause is nonexistent or
      *              unknown.)
      * @param location the location of the incorrect JSON

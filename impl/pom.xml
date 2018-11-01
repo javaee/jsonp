@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011-2017 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2018 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,7 @@
 
     <properties>
         <packages.private>org.glassfish.json</packages.private>
-        <packages.export>org.glassfish.json.api</packages.export>
+        <packages.export>javax.json.*,org.glassfish.json.api</packages.export>
     </properties>
 
     <build>
@@ -93,7 +93,79 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sources-as-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/java</directory>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/sources</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-client-sources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>javax.json</groupId>
+                                    <artifactId>javax.json-api</artifactId>
+                                    <version>${spec_impl_version}</version>
+                                    <classifier>sources</classifier>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/sources</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-source-jar</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>sources</classifier>
+                            <classesDirectory>${project.build.directory}/sources</classesDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <includeDependencySources>true</includeDependencySources>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -113,17 +185,27 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-Version>${spec.bundle.version}</Bundle-Version>
-                        <Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName>
-                        <Extension-Name>${spec.extension.name}</Extension-Name>
-                        <Implementation-Version>${spec.implementation.version}</Implementation-Version>
-                        <Specification-Version>${spec.specification.version}</Specification-Version>
-                        <Export-Package>${packages.export}</Export-Package>
-                        <Private-Package>${packages.private}</Private-Package>
-                    </instructions>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-bundle</id>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Bundle-Version>${spec.bundle.version}</Bundle-Version>
+                                <Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName>
+                                <Extension-Name>${spec.extension.name}</Extension-Name>
+                                <Implementation-Version>${spec.implementation.version}</Implementation-Version>
+                                <Specification-Version>${spec.specification.version}</Specification-Version>
+                                <Export-Package>${packages.export}</Export-Package>
+                                <Private-Package>${packages.private}</Private-Package>
+                                <Automatic-Module-Name>java.json</Automatic-Module-Name>
+                                <_donotcopy>.*services.*</_donotcopy>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -131,6 +213,7 @@
         <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -138,33 +221,34 @@
         <profile>
             <id>jdk9-setup</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                            <!--
-                               workaround for https://issues.apache.org/jira/browse/MJAVADOC-489
-                            -->
-                            <additionalJOptions>
-                                <additionalJOption>--add-modules</additionalJOption>
-                                <additionalJOption>java.json</additionalJOption>
-                                <additionalJOption>--module-path</additionalJOption>
-                                <additionalJOption>${project.build.directory}/../../api/target/javax.json-api-${project.version}.jar</additionalJOption>
-                            </additionalJOptions>
-                        </configuration>
-                    </plugin>
-                    <plugin>
                         <groupId>org.apache.felix</groupId>
                         <artifactId>maven-bundle-plugin</artifactId>
-                        <configuration>
-                            <instructions>
-                                <Include-Resource>{maven-resources},target/classes/module-info.class</Include-Resource>
-                            </instructions>
-                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>main-artifact-module</id>
+                                <goals>
+                                    <goal>bundle</goal>
+                                </goals>
+                                <configuration>
+                                    <classifier>module</classifier>
+                                    <instructions>
+                                        <Bundle-Version>${spec.bundle.version}</Bundle-Version>
+                                        <Bundle-SymbolicName>${spec.bundle.symbolic-name}.module</Bundle-SymbolicName>
+                                        <Extension-Name>${spec.extension.name}</Extension-Name>
+                                        <Implementation-Version>${spec.implementation.version}</Implementation-Version>
+                                        <Specification-Version>${spec.specification.version}</Specification-Version>
+                                        <Export-Package>org.glassfish.json.api</Export-Package>
+                                        <Private-Package>${packages.private}</Private-Package>
+                                        <Include-Resource>{maven-resources},target/classes/module-info.class</Include-Resource>
+                                    </instructions>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
