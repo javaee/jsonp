@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2018 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -352,7 +352,13 @@ public class JsonParserImpl implements JsonParser {
 
     @Override
     public boolean hasNext() {
-        return tokenizer.hasNextToken();
+        if (!tokenizer.hasNextToken()) {
+            if (!stack.isEmpty()) {
+                currentContext.getNextEvent();
+            }
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -451,7 +457,16 @@ public class JsonParserImpl implements JsonParser {
         public Event getNextEvent() {
             // Handle 1. }   2. name:value   3. ,name:value
             JsonToken token = tokenizer.nextToken();
-            if (currentEvent == Event.KEY_NAME) {
+            if (token == JsonToken.EOF) {
+                switch (currentEvent) {
+                    case START_OBJECT:
+                        throw parsingException(token, "[STRING, CURLYCLOSE]");
+                    case KEY_NAME:
+                        throw parsingException(token, "[COLON]");
+                    default:
+                        throw parsingException(token, "[COMMA, CURLYCLOSE]");
+                }
+            } else if (currentEvent == Event.KEY_NAME) {
                 // Handle 1. :value
                 if (token != JsonToken.COLON) {
                     throw parsingException(token, "[COLON]");
@@ -516,6 +531,14 @@ public class JsonParserImpl implements JsonParser {
         @Override
         public Event getNextEvent() {
             JsonToken token = tokenizer.nextToken();
+            if (token == JsonToken.EOF) {
+                switch (currentEvent) {
+                    case START_ARRAY:
+                        throw parsingException(token, "[CURLYOPEN, SQUAREOPEN, STRING, NUMBER, TRUE, FALSE, NULL]");
+                    default:
+                        throw parsingException(token, "[COMMA, CURLYCLOSE]");
+                }
+            }
             if (token == JsonToken.SQUARECLOSE) {
                 currentContext = stack.pop();
                 return Event.END_ARRAY;
