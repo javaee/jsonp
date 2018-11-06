@@ -802,6 +802,13 @@ public class JsonParserTest extends TestCase {
         checkExceptionFromHasNext("{\"unique\":true,\"name\":\"jUnitTestIndexNeg005\", \"fields\":[{\"order\":-1,\"path\":\"city.zip\"}");
     }
 
+    public void testEOFFromHasNext() {
+        checkExceptionFromHasNext("{ \"d\" : 1 } 2 3 4");
+        checkExceptionFromHasNext("[ {\"d\" : 1 }] 2 3 4");
+        checkExceptionFromHasNext("1 2 3 4");
+        checkExceptionFromHasNext("null 2 3 4");
+    }
+
     public void testExceptionsFromNext() {
         checkExceptionFromNext("{\"name\" : fal");
         checkExceptionFromNext("{\"name\" : nu");
