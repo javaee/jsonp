@@ -505,10 +505,14 @@ class JsonGeneratorImpl implements JsonGenerator {
     }
 
     protected void writeComma() {
-        if (!currentContext.first && currentContext.scope != Scope.IN_FIELD) {
+        if (isCommaAllowed()) {
             writeChar(',');
         }
         currentContext.first = false;
+    }
+
+    boolean isCommaAllowed() {
+        return !currentContext.first && currentContext.scope != Scope.IN_FIELD;
     }
 
     protected void writeColon() {
