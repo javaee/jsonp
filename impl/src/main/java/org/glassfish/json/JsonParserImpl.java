@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2024 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,27 +60,39 @@ import org.glassfish.json.api.BufferPool;
  */
 public class JsonParserImpl implements JsonParser {
 
+    /**
+     * Configuration property to limit maximum level of nesting when being parsing JSON string.
+     * Default value is set to {@code 1000}.
+     */
+    public static String MAX_DEPTH = "org.eclipse.parsson.maxDepth";
+
+    /** Default maximum level of nesting. */
+    private static final int DEFAULT_MAX_DEPTH = 1000;
+
     private Context currentContext = new NoneContext();
     private Event currentEvent;
 
-    private final Stack stack = new Stack();
+    private final Stack stack;
     private final StateIterator stateIterator;
     private final JsonTokenizer tokenizer;
 
     public JsonParserImpl(Reader reader, BufferPool bufferPool) {
         tokenizer = new JsonTokenizer(reader, bufferPool);
         stateIterator = new StateIterator();
+        stack = new Stack(propertyStringToInt(MAX_DEPTH, DEFAULT_MAX_DEPTH));
     }
 
     public JsonParserImpl(InputStream in, BufferPool bufferPool) {
         UnicodeDetectingInputStream uin = new UnicodeDetectingInputStream(in);
         tokenizer = new JsonTokenizer(new InputStreamReader(uin, uin.getCharset()), bufferPool);
         stateIterator = new StateIterator();
+        stack = new Stack(propertyStringToInt(MAX_DEPTH, DEFAULT_MAX_DEPTH));
     }
 
     public JsonParserImpl(InputStream in, Charset encoding, BufferPool bufferPool) {
         tokenizer = new JsonTokenizer(new InputStreamReader(in, encoding), bufferPool);
         stateIterator = new StateIterator();
+        stack = new Stack(propertyStringToInt(MAX_DEPTH, DEFAULT_MAX_DEPTH));
     }
 
     public String getString() {
@@ -189,9 +201,19 @@ public class JsonParserImpl implements JsonParser {
     // Using the optimized stack impl as we don't require other things
     // like iterator etc.
     private static final class Stack {
+        private int size = 0;
+        private final int limit;
+
+        private Stack(int size) {
+            this.limit = size;
+        }
+
         private Context head;
 
         private void push(Context context) {
+            if (++size >= limit) {
+                throw new RuntimeException("Input is too deeply nested " + size);
+            }
             context.next = head;
             head = context;
         }
@@ -200,6 +222,7 @@ public class JsonParserImpl implements JsonParser {
             if (head == null) {
                 throw new NoSuchElementException();
             }
+            size--;
             Context temp = head;
             head = head.next;
             return temp;
@@ -229,14 +252,10 @@ public class JsonParserImpl implements JsonParser {
                 currentContext = new ArrayContext();
                 return Event.START_ARRAY;
             }
-            throw parsingException(token, "[CURLYOPEN, SQUAREOPEN]");
+            JsonLocation location = getLastCharLocation();
+            throw new JsonParsingException(
+                    JsonMessages.PARSER_INVALID_TOKEN(token, location, "[CURLYOPEN, SQUAREOPEN]"), location);
         }
-    }
-
-    private JsonParsingException parsingException(JsonToken token, String expectedTokens) {
-        JsonLocation location = getLastCharLocation();
-        return new JsonParsingException(
-                JsonMessages.PARSER_INVALID_TOKEN(token, location, expectedTokens), location);
     }
 
     private final class ObjectContext extends Context {
@@ -256,7 +275,9 @@ public class JsonParserImpl implements JsonParser {
             if (currentEvent == Event.KEY_NAME) {
                 // Handle 1. :value
                 if (token != JsonToken.COLON) {
-                    throw parsingException(token, "[COLON]");
+                    JsonLocation location = getLastCharLocation();
+                    throw new JsonParsingException(
+                            JsonMessages.PARSER_INVALID_TOKEN(token, location, "[COLON]"), location);
                 }
                 token = tokenizer.nextToken();
                 if (token.isValue()) {
@@ -270,7 +291,9 @@ public class JsonParserImpl implements JsonParser {
                     currentContext = new ArrayContext();
                     return Event.START_ARRAY;
                 }
-                throw parsingException(token, "[CURLYOPEN, SQUAREOPEN, STRING, NUMBER, TRUE, FALSE, NULL]");
+                JsonLocation location = getLastCharLocation();
+                throw new JsonParsingException(JsonMessages.PARSER_INVALID_TOKEN(token, location,
+                        "[CURLYOPEN, SQUAREOPEN, STRING, NUMBER, TRUE, FALSE, NULL]"), location);
             } else {
                 // Handle 1. }   2. name   3. ,name
                 if (token == JsonToken.CURLYCLOSE) {
@@ -281,14 +304,18 @@ public class JsonParserImpl implements JsonParser {
                     firstValue = false;
                 } else {
                     if (token != JsonToken.COMMA) {
-                        throw parsingException(token, "[COMMA]");
+                        JsonLocation location = getLastCharLocation();
+                        throw new JsonParsingException(
+                                JsonMessages.PARSER_INVALID_TOKEN(token, location, "[COMMA]"), location);
                     }
                     token = tokenizer.nextToken();
                 }
                 if (token == JsonToken.STRING) {
                     return Event.KEY_NAME;
                 }
-                throw parsingException(token, "[STRING]");
+                JsonLocation location = getLastCharLocation();
+                throw new JsonParsingException(
+                        JsonMessages.PARSER_INVALID_TOKEN(token, location, "[STRING]"), location);
             }
         }
 
@@ -309,7 +336,9 @@ public class JsonParserImpl implements JsonParser {
                 firstValue = false;
             } else {
                 if (token != JsonToken.COMMA) {
-                    throw parsingException(token, "[COMMA]");
+                    JsonLocation location = getLastCharLocation();
+                    throw new JsonParsingException(
+                            JsonMessages.PARSER_INVALID_TOKEN(token, location, "[COMMA]"), location);
                 }
                 token = tokenizer.nextToken();
             }
@@ -324,9 +353,14 @@ public class JsonParserImpl implements JsonParser {
                 currentContext = new ArrayContext();
                 return Event.START_ARRAY;
             }
-            throw parsingException(token, "[CURLYOPEN, SQUAREOPEN, STRING, NUMBER, TRUE, FALSE, NULL]");
+            JsonLocation location = getLastCharLocation();
+            throw new JsonParsingException(JsonMessages.PARSER_INVALID_TOKEN(token, location,
+                    "[CURLYOPEN, SQUAREOPEN, STRING, NUMBER, TRUE, FALSE, NULL]"), location);
         }
 
     }
 
+    static int propertyStringToInt(String propertyName, int defaultValue) throws JsonException {
+        return Integer.getInteger(propertyName, defaultValue);
+    }
 }
