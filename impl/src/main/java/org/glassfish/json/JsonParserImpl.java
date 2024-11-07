@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2024 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,27 +78,39 @@ import org.glassfish.json.api.BufferPool;
  */
 public class JsonParserImpl implements JsonParser {
 
+    /**
+     * Configuration property to limit maximum level of nesting when being parsing JSON string.
+     * Default value is set to {@code 1000}.
+     */
+    public static String MAX_DEPTH = "org.eclipse.parsson.maxDepth";
+
+    /** Default maximum level of nesting. */
+    private static final int DEFAULT_MAX_DEPTH = 1000;
+
     private final BufferPool bufferPool;
     private Context currentContext = new NoneContext();
     private Event currentEvent;
 
-    private final Stack stack = new Stack();
+    private final Stack stack;
     private final JsonTokenizer tokenizer;
 
     public JsonParserImpl(Reader reader, BufferPool bufferPool) {
         this.bufferPool = bufferPool;
         tokenizer = new JsonTokenizer(reader, bufferPool);
+        stack = new Stack(propertyStringToInt(MAX_DEPTH, DEFAULT_MAX_DEPTH));
     }
 
     public JsonParserImpl(InputStream in, BufferPool bufferPool) {
         this.bufferPool = bufferPool;
         UnicodeDetectingInputStream uin = new UnicodeDetectingInputStream(in);
         tokenizer = new JsonTokenizer(new InputStreamReader(uin, uin.getCharset()), bufferPool);
+        stack = new Stack(propertyStringToInt(MAX_DEPTH, DEFAULT_MAX_DEPTH));
     }
 
     public JsonParserImpl(InputStream in, Charset encoding, BufferPool bufferPool) {
         this.bufferPool = bufferPool;
         tokenizer = new JsonTokenizer(new InputStreamReader(in, encoding), bufferPool);
+        stack = new Stack(propertyStringToInt(MAX_DEPTH, DEFAULT_MAX_DEPTH));
     }
 
     @Override
@@ -388,9 +400,19 @@ public class JsonParserImpl implements JsonParser {
     // Using the optimized stack impl as we don't require other things
     // like iterator etc.
     private static final class Stack {
+        private int size = 0;
+        private final int limit;
+
+        private Stack(int size) {
+            this.limit = size;
+        }
+
         private Context head;
 
         private void push(Context context) {
+            if (++size >= limit) {
+                throw new RuntimeException("Input is too deeply nested " + size);
+            }
             context.next = head;
             head = context;
         }
@@ -399,6 +421,7 @@ public class JsonParserImpl implements JsonParser {
             if (head == null) {
                 throw new NoSuchElementException();
             }
+            size--;
             Context temp = head;
             head = head.next;
             return temp;
@@ -590,4 +613,7 @@ public class JsonParserImpl implements JsonParser {
         }
     }
 
+    static int propertyStringToInt(String propertyName, int defaultValue) throws JsonException {
+        return Integer.getInteger(propertyName, defaultValue);
+    }
 }
